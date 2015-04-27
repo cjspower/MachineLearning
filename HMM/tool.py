@@ -6,20 +6,40 @@ np.seterr('ignore')
 #create a hmm model
 def HmmModel(A,B,pi,pe=0):
     "Return a hmm model based on given parameter"
-    A = np.array(A)
-    B = np.array(B)
+    A = np.array(A).astype(float)
+    B = np.array(B).astype(float)
     if pe==0:
-        pe = np.ones(np.shape(A)[0])
+        pe = np.ones(np.shape(A)[0]).astype(float)
     else:
-        pe = np.array(pe)    
-    pi = np.array(pi)
+        pe = np.array(pe).astype(float)   
+    pi = np.array(pi).astype(float)
     return (A,B,pi,pe)
+
+def normalize(A):
+    s = sum(A)
+    A = A/s
+    return (A,np.log(s))  
+   
     
-def foward(model, observation):
+def forward(model, observation):
+    "Return the log probability alpha_i T"
+    obLength = len(observation)
+    stateNum = np.shape(model[0])[0]
+    alphaTable = np.zeros((obLength,stateNum))
+    temp = normalize(model[2]*model[1][:,observation[0]-1])
+    alphaTable[0] = temp[0]
+    x = temp[1]
+    for t in xrange(1, obLength):
+        temp = normalize(np.dot(alphaTable[t-1],model[0])*model[1][:,observation[t]-1])
+        alphaTable[t] = temp[0]
+        x = x + temp[1]
+    return (alphaTable, x)
+
+def backward(model, observation):
+    obLength = len(observation)
+    stateNum = np.shape(model[0])[0]
+    betaTable = np.zeros((obLength,stateNum))
     
-    
-    
-    return 0
     
 
 def viterbi(model, observation):
@@ -48,6 +68,5 @@ def viterbi(model, observation):
     for trace in reversed(backTrace):
         route.append(stateSpace[flag])
         flag = trace[flag]
-    route.append(stateSpace[flag]) 
     route.reverse()
     return route
