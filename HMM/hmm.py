@@ -15,7 +15,7 @@ def main():
     PI2 = [1,0,0,0]
     model = tool.HmmModel(C,D,PI)
     model2 = tool.HmmModel(A,B,PI2)
-    print tool.forward(model,[3,2,1,2,2,6,5])
+    print tool.backward(model,[3,2,1,2,2,6,5])
     
     
 if __name__ == '__main__':

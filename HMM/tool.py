@@ -36,12 +36,27 @@ def forward(model, observation):
     return (alphaTable, x)
 
 def backward(model, observation):
+    "implement the beta recursion"
     obLength = len(observation)
     stateNum = np.shape(model[0])[0]
     betaTable = np.zeros((obLength,stateNum))
+    betaTable[obLength-1] = normalize(np.ones(stateNum))[0]
+    for t in xrange(obLength-2,-1,-1):
+        betaTable[t] = normalize(np.dot(model[1][:,observation[t+1]-1]*betaTable[t+1],model[0]))[0]
+    return betaTable
     
+def StateProb(model, observation):
+    "calculate a state table indicate p(ht=i) for given observation}"
+    obLength = len(observation)
+    stateNum = np.shape(model[0])[0]
+    alphaTable = forward(model, observation)[0]
+    betaTable = backward(model, observation)
+    probability = np.zeros((obLength, stateNum))
+    mult = alphaTable*betaTable
+    for i in xrange(0,obLength):
+        mult[i] = mult[i]/sum(mult[i])
+    return mult
     
-
 def viterbi(model, observation):
     "Return a most likes hidden state sequence"
     observation = np.array(observation)
